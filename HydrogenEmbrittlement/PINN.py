@@ -22,11 +22,15 @@ def q_flux(r, theta, t, k, q):
 
 def first_order_derivatives(model, x, y):
     #Use neural net to find the first order derivatives 
+    dy_dx=torch.autograd.grad(outputs=y, inputs=x, grad_outputs=torch.ones_like(y), create_graph=True)[0]
+    return dy_dx
 
 
 def second_order_derivatives(model, x, y):
     #Use neural net to find the second order derivatives
-
+    dy_dx=first_order_derivatives(model, x, y)
+    d2y_dx2=torch.autograd.grad(outputs=dy_dx, inputs=x.ones_like(y), create_graph=True)[0]
+    return d2y_dx2
 
 class LossFunction(nn.Module):
     def __init__(self):
