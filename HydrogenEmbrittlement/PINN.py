@@ -4,6 +4,8 @@ from jarvis.db.figshare import get_jid_data
 from jarvis.analysis.elastic.tensor import ElasticTensor
 import math
 import numpy as np
+import jarvis.db.figshare import data
+import pandas as pd
 
 """
 This package calculates loss functions for mass transport in extreme environements for a metal rod using a PINN
@@ -32,9 +34,16 @@ def second_order_derivatives(model, x, y):
     d2y_dx2=torch.autograd.grad(outputs=dy_dx, inputs=x.ones_like(y), create_graph=True)[0]
     return d2y_dx2
 
+
+def get_density(chemical_species):
+    #Determine the density of chemical species using jarvis-DFT
+    dft_data=data('dft_3d')
+    df=pd.DataFrame(dft_data)
+    return df[df['formula']==chemical_species].sort_values('formation_energy_peratom').iloc[0]['density']
+
 class LossFunction(nn.Module):
     def __init__(self):
-        #Constants as used from Jarvis-DFT (stress tensor constants) for pure Zr as an initial approximation
+        #Constants as used from Jarvis-DFT (stress tensor constants) for pure Zr (HCP) as an initial approximation
         data=get_jid_data(jid="JVASP-10143", dataset="dft_3d"
         hcp_zr_stress_tensors=data.get("elastic_tensor")
         tensor_array=ElasticTensor(hcp_zr_stress)
@@ -49,9 +58,11 @@ class LossFunction(nn.Module):
         self.A=math.pi
         self.T=1000 #(in Kelvin) the temperature at the boundary (at r=1m)
         self.R=8.3145 #J/(K*mol)
+        self.rho=get_density('Zr')
     def mechanical_loss(r, t):                     
         #Cauchy-Navier equation
-        rho*d2(u)_dt2=(lambda+mu)radial_gradient(radial_gradient(u, r), r)+mu*radial_laplacian(u)+force
+        
+        rho*d2u_dt2=(lambda+mu)radial_gradient(radial_gradient(u, r), r)+mu*radial_laplacian(u)+force
     def thermal_loss(r, theta, t):
         #Fourier's law (-kAdT/dr)
         f_thermal=q_flux(r, theta, t, self.k, self.q)+rho*C_p*dT/dt
