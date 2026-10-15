@@ -11,11 +11,35 @@ import pandas as pd
 This package calculates loss functions for mass transport in extreme environements for a metal rod using a PINN
 """
 
-def radial_gradient(f, r)
-    return np.gradient(f, r, edge_order=2)
+def radial_gradient(func, r)
+    """
+    Calculates the radial gradient for a function
 
-def radial_laplacian(f, r):
-    df_dr=radial_gradient(f, r)
+    Args:
+    ----
+        func: function with which the gradient is calculated
+        r: radial component
+
+    Returns:
+    -------
+        The gradient of the function
+    """
+    return np.gradient(func, r, edge_order=2)
+
+def radial_laplacian(func, r):
+    """
+    Calculates the radial laplacian for a function
+
+    Args:
+    ----
+        func: function with which the laplacian is calculated
+        r: radial component
+
+    Returns:
+    -------
+        The laplacian of the function
+    """
+    df_dr=radial_gradient(func, r)
     return np.gradient(df_dr, r, edge_order=2)
 
 def q_flux(r, theta, t, k, q):
