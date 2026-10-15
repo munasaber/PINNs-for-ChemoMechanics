@@ -42,12 +42,26 @@ def radial_laplacian(func, r):
     df_dr=radial_gradient(func, r)
     return np.gradient(df_dr, r, edge_order=2)
 
-def q_flux(r, theta, t, k, q):
-    #Flux for a 2D radial system
+def heat_conduction(r, theta, t, k):
+    """
+    Calculates the heat conduction through radial and angular coordinates
+
+    Args:
+    ----
+        r: radial coordinate (m)
+        theta: angular coordinate (
+        t: time (s)
+        k: thermal conductivity W/(m*K)
+
+    Returns:
+    -------
+
+    """
+    #Heat conduction for a 2D radial system
     d2T_dr2=second_order_derivatives(model, r, T)
     dT_dr=first_order_derivatives(model, r, T)
     d2T_dtheta2=second_order_derivatives(model, theta, T)
-    return -k*(d2T_dr2+(1/r)*(dT_dr)+(1/r**2)*(d2T_dtheta2)-q
+    return -k*(d2T_dr2+(1/r)*(dT_dr)+(1/r**2)*(d2T_dtheta2)
 
 def first_order_derivatives(model, x, y):
     #Use neural net to find the first order derivatives 
@@ -82,9 +96,9 @@ class LossFunction(nn.Module):
         #thermal conductivity
         self.k=22.6 #W/(m.K)
         
-        #Area (where r=1m) 
-        self.A=math.pi*1**2
-        self.T=1000 #(in Kelvin) the temperature at the boundary (at r=1m)
+        #Area (where r=0.01m) 
+        self.A=math.pi*(0.01**2)
+        self.T=1000+273.15 #(in Kelvin) the temperature at the boundary (at r=0.01m)
         self.R=8.3145 #J/(K*mol)
         self.rho=get_density('Zr')
     def mechanical_loss(r, t):                     
@@ -94,7 +108,7 @@ class LossFunction(nn.Module):
     def thermal_loss(r, theta, t):
         #Fourier's law for a cylindrical vessel
         dT_dt=first_order_derivatives(self.model, t, T)
-        f_thermal=q_flux(r, theta, t, self.k, self.q)+rho*C_p*dT_dt
+        f_thermal=heat_conduction(r, theta, t, self.k) -self.q_dot+rho*C_p*dT_dt
     def transport_loss(r, t):
         #Flux equation
         d_C_L_dt=first_order_derivatives(model, t, C_L)
