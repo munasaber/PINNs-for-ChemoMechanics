@@ -20,7 +20,9 @@ def radial_laplacian(f, r):
 
 def q_flux(r, theta, t, k, q):
     #Flux for a 2D radial system
-    
+    d2T_dr2=second_order_derivatives(model, r, T)
+    dT_dr=first_order_derivatives(model, r, T)
+    d2T_dtheta2=second_order_derivatives(model, theta, T)
     return -k*(d2T_dr2+(1/r)*(dT_dr)+(1/r**2)*(d2T_dtheta2)-q
 
 def first_order_derivatives(model, x, y):
@@ -57,7 +59,7 @@ class LossFunction(nn.Module):
         self.k=22.6 #W/(m.K)
         
         #Area (where r=1m) 
-        self.A=math.pi
+        self.A=math.pi*1**2
         self.T=1000 #(in Kelvin) the temperature at the boundary (at r=1m)
         self.R=8.3145 #J/(K*mol)
         self.rho=get_density('Zr')
