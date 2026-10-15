@@ -61,13 +61,16 @@ class LossFunction(nn.Module):
         self.rho=get_density('Zr')
     def mechanical_loss(r, t):                     
         #Cauchy-Navier equation
-        
+        d2u_dt2=second_order_derivatives(self.model, t, u)   
         rho*d2u_dt2=(lambda+mu)radial_gradient(radial_gradient(u, r), r)+mu*radial_laplacian(u)+force
     def thermal_loss(r, theta, t):
         #Fourier's law (-kAdT/dr)
-        f_thermal=q_flux(r, theta, t, self.k, self.q)+rho*C_p*dT/dt
+        dT_dt=first_order_derivatives(self.model, t, T)
+        f_thermal=q_flux(r, theta, t, self.k, self.q)+rho*C_p*dT_dt
     def transport_loss(r, t):
         #Flux equation
+        d_C_L_dt=first_order_derivatives(model, t, C_L)
+        d_C_T_dt=first_order_derivatives(model, t, C_T)
         J=-D*radial_gradient(C_L, r)+(D*C_L*V_H)/(R*T)*radial_gradient(sigma_h)-(D*C_L*Q)/(R*T**2)*radial_gradient(T)
         f_transport=d_C_L_dt+d_C_T_dt+radial_gradient(J, r)
     def total_loss():
